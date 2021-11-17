@@ -2,7 +2,6 @@ package telran.util;
 
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.function.Predicate;
 
 public class TreeSet<T> extends AbstractSet<T> {
  private static class Node<T> {
@@ -23,18 +22,32 @@ public class TreeSet<T> extends AbstractSet<T> {
 public TreeSet() {
 	 this((Comparator<T>)Comparator.naturalOrder());
  }
+ private Node<T> getMostLeftFrom(Node<T> from) {
+	 while(from.left != null) {
+		 from = from.left;
+	 }
+	 return from;
+ }
+ private Node<T> getFirstParentGreater(Node<T> node) {
+	 while(node.parent != null && node.parent.left != node) {
+		 node = node.parent;
+	 }
+	 return node.parent;
+ }
  private class TreeSetIterator implements Iterator<T> {
-//TODO required fields
+Node<T> current = root == null ? root : getMostLeftFrom(root);
 	@Override
 	public boolean hasNext() {
-		// TODO Auto-generated method stub
-		return false;
+		
+		return current != null;
 	}
 
 	@Override
 	public T next() {
-		// TODO Auto-generated method stub
-		return null;
+		T res = current.obj;
+		current = current.right != null ? getMostLeftFrom(current.right) :
+			getFirstParentGreater(current);
+		return res;
 	}
 	 
  }
@@ -90,8 +103,8 @@ public TreeSet() {
 
 	@Override
 	public Iterator<T> iterator() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		return new TreeSetIterator();
 	}
 
 	@Override
