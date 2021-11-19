@@ -9,6 +9,18 @@ public class TreeSet<T> extends AbstractSet<T> {
 	 Node<T> left; //reference to all nodes containing objects less than obj
 	 Node<T> right; //reference to all nodes containing objects greater than obj
 	 Node<T> parent; //reference to a parent
+	 void print(String name) {
+		 System.out.println(name+"  obj="+obj);
+		 if(left != null) {
+			 System.out.println("left="+left.obj);
+		 }
+		 if(right != null) {
+			 System.out.println("right="+right.obj);
+		 }
+		 if(parent != null) {
+			 System.out.println("parent="+parent.obj);
+		 }
+	 }
 	 Node(T obj) {
 		 this.obj = obj;
 	 }
@@ -35,7 +47,8 @@ public TreeSet() {
 	 return node.parent;
  }
  private class TreeSetIterator implements Iterator<T> {
-Node<T> current = root == null ? root : getMostLeftFrom(root);
+	 Node<T> current = root == null ? root : getMostLeftFrom(root);
+	 Node<T> previous = null;
 	@Override
 	public boolean hasNext() {
 		
@@ -45,13 +58,17 @@ Node<T> current = root == null ? root : getMostLeftFrom(root);
 	@Override
 	public T next() {
 		T res = current.obj;
+		previous = current;
 		current = current.right != null ? getMostLeftFrom(current.right) :
-			getFirstParentGreater(current);
+										  getFirstParentGreater(current);
 		return res;
 	}
 	@Override 
 	public void remove() {
-		//TODO
+		// TODO 
+		TreeSet.this.remove(previous.obj);
+//		removeNode(previous);
+		// Done
 	}
 	 
  }
@@ -103,13 +120,65 @@ Node<T> current = root == null ? root : getMostLeftFrom(root);
 		if (removedNode == null) {
 			return null;
 		}
+		// V.R. !!!!!
+//		removeNodeY(removedNode);
 		removeNode(removedNode);
 		return removedNode.obj;
 	}
 
-	
-
+	// V.R.   Begin
 	private void removeNode(Node<T> removedNode) {
+		if(removedNode.left != null && removedNode.right != null) {
+			// Junction
+			removeJunctionNode(removedNode);
+		} else {
+			// non-junction/Leaf
+			removeNonJunctionNode(removedNode);
+		}	
+		size--;
+	}
+	private void removeNonJunctionNode(Node<T> removedNode) {
+		if(removedNode == root) {
+			removedNode.parent = null;
+			root = removedNode.right == null ? removedNode.left : removedNode.right;
+		} else {
+			Node<T> parent = removedNode.parent;
+			Node<T> child = removedNode.right == null ? removedNode.left : removedNode.right;
+			if (parent.right == removedNode) {
+				parent.right = child;				
+			} else {
+				parent.left = child;
+			}
+			if (child != null) {
+				child.parent = parent;
+			}
+		}
+	}
+	private void removeJunctionNode(Node<T> removedNode) {
+		// Substitution calculation
+		Node<T> substitutionNode = getMostLeftFrom(removedNode.right);
+		if(removedNode != root) {
+			// Parent for substitution
+			Node<T> parent = removedNode.parent;
+			if (parent.right == removedNode) {
+				parent.right = substitutionNode;
+			} else {
+				parent.left = substitutionNode; 
+			}
+			substitutionNode.parent = parent;
+		} else {
+			substitutionNode.parent = null;
+			root = substitutionNode;
+		}
+		//
+		substitutionNode.left = removedNode.left;
+		substitutionNode.left.parent = substitutionNode;
+	}
+	// V.R.   End
+
+	// Y.G Begin
+	
+	private void removeNodeY(Node<T> removedNode) {
 		//TODO update the method by applying another algorithm
 		if (removedNode == root) {
 			removeRoot();
@@ -154,6 +223,8 @@ Node<T> current = root == null ? root : getMostLeftFrom(root);
 		root = child;
 		
 	}
+	
+	// Y.G End
 	private Node<T> getNode(T pattern) {
 		Node<T> current = root;
 		while(current != null && !current.obj.equals(pattern)) {
