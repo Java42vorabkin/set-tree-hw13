@@ -160,8 +160,11 @@ public TreeSet() {
 		}
 	} 
 	private void removeJunctionNode(Node<T> removedNode) {
+		// Does removeNode exist on the left side from the root? Or on the right side?
+		boolean removedNodeLeft = comp.compare(root.obj, removedNode.obj) > 0;
 		// Substitution node getting
-		Node<T> substitutionNode = getMostLeftFrom(removedNode.right);
+		Node<T> substitutionNode = removedNodeLeft ? getMostLeftFrom(removedNode.right) :
+													 getMostLeftFrom(removedNode.left);		
 		if(removedNode != root) {
 			// Parent for substitution
 			Node<T> parent = removedNode.parent;
@@ -178,8 +181,13 @@ public TreeSet() {
 			root = substitutionNode;
 		}
 		// final update substitution
-		substitutionNode.left = removedNode.left;
-		substitutionNode.left.parent = substitutionNode;
+		if(removedNodeLeft) {
+			substitutionNode.left = removedNode.left;
+			substitutionNode.left.parent = substitutionNode;			
+		} else {
+			substitutionNode.right = removedNode.right;
+			substitutionNode.right.parent = substitutionNode;			
+		}
 	}
 	// V.R.   End
 
