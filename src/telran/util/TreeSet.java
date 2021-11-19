@@ -9,6 +9,7 @@ public class TreeSet<T> extends AbstractSet<T> {
 	 Node<T> left; //reference to all nodes containing objects less than obj
 	 Node<T> right; //reference to all nodes containing objects greater than obj
 	 Node<T> parent; //reference to a parent
+	 // Example for debugging only
 	 void print(String name) {
 		 System.out.println(name+"  obj="+obj);
 		 if(left != null) {
@@ -67,6 +68,7 @@ public TreeSet() {
 	public void remove() {
 		// TODO 
 		TreeSet.this.remove(previous.obj);
+		// It is also possible
 //		removeNode(previous);
 		// Done
 	}
@@ -142,78 +144,86 @@ public TreeSet() {
 			removedNode.parent = null;
 			root = removedNode.right == null ? removedNode.left : removedNode.right;
 		} else {
+			// Get parent and child
 			Node<T> parent = removedNode.parent;
 			Node<T> child = removedNode.right == null ? removedNode.left : removedNode.right;
+			// Connect parent with child
 			if (parent.right == removedNode) {
 				parent.right = child;				
 			} else {
 				parent.left = child;
 			}
+			// Connect child with parent
 			if (child != null) {
 				child.parent = parent;
 			}
 		}
 	} 
 	private void removeJunctionNode(Node<T> removedNode) {
-		// Substitution calculation
+		// Substitution node getting
 		Node<T> substitutionNode = getMostLeftFrom(removedNode.right);
 		if(removedNode != root) {
 			// Parent for substitution
 			Node<T> parent = removedNode.parent;
+			// Connect parent with substitution
 			if (parent.right == removedNode) {
 				parent.right = substitutionNode;
 			} else {
 				parent.left = substitutionNode; 
 			}
+			// Connect substitution with parent
 			substitutionNode.parent = parent;
 		} else {
 			substitutionNode.parent = null;
 			root = substitutionNode;
 		}
-		//
+		// final update substitution
 		substitutionNode.left = removedNode.left;
 		substitutionNode.left.parent = substitutionNode;
 	}
 	// V.R.   End
 
 	// Y.G Begin
-	
 	private void removeNodeY(Node<T> removedNode) {
 		//TODO update the method by applying another algorithm
 		if (removedNode == root) {
 			removeRoot();
 		} else {
+			// Get parent for removedNode. It cannot be null
 			Node<T> parent = removedNode.parent;
+			// Get child node with preference to the right branch
 			Node<T> child = removedNode.right == null ? removedNode.left : removedNode.right;
-			
+			// Connect parentNode with child  
 			if (parent.right == removedNode) {
-				parent.right = child;
-				
+				parent.right = child;				
 			} else {
 				parent.left = child;
 			}
+			// Connect child with parent node
 			if (child != null) {
 				child.parent = parent;
 			}
 			if (removedNode.right != null) {
+				// If removedNode is the junction, then 
 				Node<T> parentLeft = getMostLeftFrom(removedNode.right);
 				parentLeft.left = removedNode.left;
 				if(removedNode.left != null) {
 					removedNode.left.parent = parentLeft;
-				}
-				
+				}				
 			}
 		}
-		size--;
-		
+		size--;		
 	}
 	private void removeRoot() {
 		//TODO update the method by applying another algorithm (see slide 28)
+		// Get child node with preference to the right branch
 		Node<T> child = root.right == null ? root.left : root.right;
+		// Disonnect child from parent node
 		if (child != null) {
 			child.parent = null;
 		}
 		if (root.right != null) {
+			// If removedNode is the junction, then 
 			Node<T> parentLeft = getMostLeftFrom(root.right);
 			parentLeft.left = root.left;
 			if (root.left != null) {
