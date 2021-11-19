@@ -153,7 +153,7 @@ public TreeSet() {
 				child.parent = parent;
 			}
 		}
-	}
+	} 
 	private void removeJunctionNode(Node<T> removedNode) {
 		// Substitution calculation
 		Node<T> substitutionNode = getMostLeftFrom(removedNode.right);
