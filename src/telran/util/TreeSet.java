@@ -47,7 +47,7 @@ public TreeSet() {
 	 }
 	 return node.parent;
  }
- private class TreeSetIterator implements Iterator<T> {
+ public class TreeSetIterator implements Iterator<T> {
 	 Node<T> current = root == null ? root : getMostLeftFrom(root);
 	 Node<T> previous = null;
 	@Override
@@ -132,7 +132,7 @@ public TreeSet() {
 	private void removeNode(Node<T> removedNode) {
 		if(removedNode.left != null && removedNode.right != null) {
 			// Junction
-			removeJunctionNode(removedNode);
+			removeJunctionNodeC(removedNode);
 		} else {
 			// non-junction/Leaf
 			removeNonJunctionNode(removedNode);
@@ -159,13 +159,16 @@ public TreeSet() {
 			}
 		}
 	} 
-	private void removeJunctionNode(Node<T> removedNode) {
-		// Does removeNode exist on the left side from the root? Or on the right side?
-		boolean removedNodeLeft = comp.compare(root.obj, removedNode.obj) > 0;
-		// Substitution node getting
-		Node<T> substitutionNode = removedNodeLeft ? getMostLeftFrom(removedNode.right) :
-													 getMostLeftFrom(removedNode.left);		
-		if(removedNode != root) {
+	// non-classic algorithm. Different behaviour for left and right branches
+	private void removeJunctionNodeNC(Node<T> removedNode) {
+		if(removedNode==root) {
+			removeRootJunction();
+		} else {
+			// Does removeNode exist on the left side from the root? Or on the right side?
+			boolean removedNodeLeft = comp.compare(root.obj, removedNode.obj) > 0;
+			// Substitution node getting		
+			Node<T> substitutionNode = removedNodeLeft ? getMostLeftFrom(removedNode.right) :
+													 	getMostLeftFrom(removedNode.left);	
 			// Parent for substitution
 			Node<T> parent = removedNode.parent;
 			// Connect parent with substitution
@@ -176,18 +179,49 @@ public TreeSet() {
 			}
 			// Connect substitution with parent
 			substitutionNode.parent = parent;
-		} else {
-			substitutionNode.parent = null;
-			root = substitutionNode;
+			// final update substitution
+			if(removedNodeLeft) {
+				substitutionNode.left = removedNode.left;
+				substitutionNode.left.parent = substitutionNode;			
+			} else {
+				substitutionNode.right = removedNode.right;
+				substitutionNode.right.parent = substitutionNode;			
+			}
 		}
-		// final update substitution
-		if(removedNodeLeft) {
-			substitutionNode.left = removedNode.left;
-			substitutionNode.left.parent = substitutionNode;			
-		} else {
-			substitutionNode.right = removedNode.right;
-			substitutionNode.right.parent = substitutionNode;			
+	}
+	// Classic algorithm described by Yuri
+	private void removeJunctionNodeC(Node<T> removedNode) {
+		// A substitution is the most left node from the right 
+		// subtree of the being removed node
+		Node<T> substitutionNode = getMostLeftFrom(removedNode.right);
+		// Junction should replace its reference to object with 
+		// the reference from the substitution
+		removedNode.obj = substitutionNode.obj;
+		if(removedNode.right == substitutionNode ) {
+			// If substitutionNode is the next after removedNode
+			removedNode.right = substitutionNode.right;
+			if(removedNode.right != null) {
+				removedNode.right.parent = removedNode;
+			}
 		}
+		// removing substitutionNode
+		Node<T> parent = substitutionNode.parent;
+		if(parent != null && parent.right == substitutionNode) {
+			parent.right = null;
+		}
+		substitutionNode.parent = null;
+	}
+	// This method is used by non-classic algorithm
+	private void removeRootJunction() {
+		//TODO update the method by applying another algorithm (see slide 28)
+		// Get child node with preference to the right branch
+		Node<T> child = root.right;
+		// Disconnect child from parent node
+		child.parent = null;
+		Node<T> parentLeft = getMostLeftFrom(root.right);
+		parentLeft.left = root.left;
+		root.left.parent = parentLeft;
+		root = child;
 	}
 	// V.R.   End
 
@@ -226,7 +260,7 @@ public TreeSet() {
 		//TODO update the method by applying another algorithm (see slide 28)
 		// Get child node with preference to the right branch
 		Node<T> child = root.right == null ? root.left : root.right;
-		// Disonnect child from parent node
+		// Disconnect child from parent node
 		if (child != null) {
 			child.parent = null;
 		}
